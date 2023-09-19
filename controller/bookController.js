@@ -2,18 +2,12 @@ const BookSchema = require("../models/bookSchema.js");
 const MyError = require("../utils/myError.js");
 const asyncHandler = require("express-async-handler");
 const CategoriesSchema = require("../models/categorieSchema.js");
+const path = require("path");
 
 exports.getBooks = asyncHandler(async (req, res, next) => {
   let query;
 
-  if (req.params.categoryId) {
-    query = BookSchema.find({ category: req.params.categoryId });
-  } else {
-    query = BookSchema.find().populate({
-      path: "category",
-      select: "name averagePrice",
-    });
-  }
+
 
   const books = await query;
 
@@ -65,16 +59,27 @@ exports.uploadBookPhoto = asyncHandler(async (req, res, next) => {
     throw new MyError(req.params.id + "id ном байхгүй байн", 400);
   }
 
-  let file = req.files;
-  let image = file.mimetype;
-  console.log(image);
-  // if (ima) {
-  //   throw new MyError("зураг оруулах хийнэ үү", 400);
-  // }
-  console.log(file);
-  res.end();
-  // res.status(200).json({
-  //   success: true,
-  //   data: book,
-  // });
+  let image = JSON.parse(JSON.stringify(req.files));
+
+  if (!req.files.file.mimetype.startsWith("image")) {
+    throw new MyError("та зураг upload хийнэ үү", 400);
+  }
+
+  if (req.files.file.size > process.env.MAX_UPLOAD_FILE_SIZE * 1024 * 1024) {
+    throw new MyError("таны зурагны хэмжээ хэтэрсэн байна", 400);
+  }
+
+  let fileName = `photo_${req.params.id}${path.parse(req.files.file.name).ext}`;
+
+  req.files.file.mv(`./${process.env.FILE_UPLOAD_PATH}/${fileName}`, (err) => {
+    if (err) {
+      throw new MyError("файлыг хуулахад алдаа гарсан : " + err.message, 400);
+    }
+  });
+  book.photo = fileName;
+  book.save();
+  res.status(200).json({
+    success: true,
+    data: fileName,
+  });
 });
