@@ -32,6 +32,34 @@ exports.getBooks = asyncHandler(async (req, res, next) => {
     pagination,
   });
 });
+exports.getUserBooks = asyncHandler(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const sort = req.query.sort;
+  const select = req.query.select;
+  ["select", "sort", "page", "limit"].forEach((el) => delete req.query[el]);
+
+  const pagination = await paginate(page, limit, BookSchema);
+  req.query.createUser = req.userId;
+  const books = await BookSchema.find(req.query, select)
+    .populate({
+      path: "category",
+      select: "name averagePrice",
+    })
+    .sort(sort)
+    .skip(pagination.start - 1)
+    .limit(limit);
+
+  if (!books) {
+    throw new MyError("Ном байхгүй байна", 400);
+  }
+  res.status(200).json({
+    success: true,
+    count: books.length,
+    data: books,
+    pagination,
+  });
+});
 exports.getCategorieBooks = asyncHandler(async (req, res, next) => {
   const books = await BookSchema.find({ category: req.params.categoryId });
 
