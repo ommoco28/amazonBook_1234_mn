@@ -34,6 +34,14 @@ const bookSchema = new Schema(
       ref: "categorieSchema",
       required: true,
     },
+    createUser: {
+      type: mongoose.Schema.ObjectId,
+      ref: "userSchema",
+    },
+    updateUser: {
+      type: mongoose.Schema.ObjectId,
+      ref: "userSchema",
+    },
     content: {
       type: String,
       required: [true, "тайлбар оруулах ёстой"],

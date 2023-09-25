@@ -21,7 +21,7 @@ const userSchema = new Schema({
   role: {
     type: String,
     required: [true, "хэрэглэгчийн эрхийг оруулна уу"],
-    enum: ["user", "operator"],
+    enum: ["user", "operator", "admin"],
     default: "user",
   },
   password: {

@@ -1,9 +1,9 @@
 const fs = require("fs");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const req = require("express/lib/request");
 const Category = require("./models/categorieSchema");
 const Book = require("./models/bookSchema");
+const User = require("./models/userSchema");
 
 dotenv.config({ path: "./config/.env" });
 
@@ -19,10 +19,14 @@ const categories = JSON.parse(
 const books = JSON.parse(
   fs.readFileSync(__dirname + "/data/books.json", "utf-8")
 );
+const users = JSON.parse(
+  fs.readFileSync(__dirname + "/data/users.json", "utf-8")
+);
 const importData = async () => {
   try {
     await Category.create(categories);
     await Book.create(books);
+    await User.create(users);
     console.log("import success");
   } catch (err) {
     console.log(err);
@@ -32,6 +36,7 @@ const deleteData = async () => {
   try {
     await Category.deleteMany();
     await Book.deleteMany();
+    await User.deleteMany();
     console.log("delete successI");
   } catch (err) {
     console.log(err);
