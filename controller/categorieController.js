@@ -1,7 +1,7 @@
 const categorieSchema = require("../models/categorieSchema");
-const CategoriesSchema = require("../models/categorieSchema");
 const MyError = require("../utils/myError");
 const asyncHandler = require("express-async-handler");
+const paginate = require("../utils/paginate");
 
 exports.getCategories = asyncHandler(async (req, res, next) => {
   const select = req.query.select;
@@ -11,18 +11,12 @@ exports.getCategories = asyncHandler(async (req, res, next) => {
 
   ["select", "sort", "page", "limit"].forEach((el) => delete req.query[el]);
 
-  const total = await CategoriesSchema.countDocuments();
-  const pageCount = Math.ceil(total / limit);
-  const start = (page - 1) * limit + 1;
-  let end = start + limit - 1;
-  if (end > total) end = total;
-  const pagination = { total, pageCount, start, end };
-  if (page < pageCount) pagination.nextPage = page + 1;
-  if (page > 1) pagination.prevPage = page - 1;
+  const pagination = await paginate(page, limit, categorieSchema);
 
-  const categories = await CategoriesSchema.find(req.query, select)
+  const categories = await categorieSchema
+    .find(req.query, select)
     .sort(sort)
-    .skip(start - 1)
+    .skip(pagination.start - 1)
     .limit(limit);
   if (!categories) {
     throw new MyError("Катигори байхгүй байна", 400);
@@ -36,9 +30,9 @@ exports.getCategories = asyncHandler(async (req, res, next) => {
 });
 
 exports.getCategorie = asyncHandler(async (req, res, next) => {
-  const categorie = await CategoriesSchema.findById(req.params.id).populate(
-    "books"
-  );
+  const categorie = await categorieSchema
+    .findById(req.params.id)
+    .populate("books");
   if (!categorie) {
     throw new MyError(req.params.id + "id тай катигори алга!", 400);
   }
@@ -51,7 +45,7 @@ exports.getCategorie = asyncHandler(async (req, res, next) => {
 
 exports.setCategorie = async (req, res, next) => {
   try {
-    const categorie = await CategoriesSchema.create(req.body);
+    const categorie = await categorieSchema.create(req.body);
     res.status(200).json({
       success: true,
       data: categorie,
@@ -62,7 +56,7 @@ exports.setCategorie = async (req, res, next) => {
 };
 
 exports.deleteCategorie = asyncHandler(async (req, res, next) => {
-  const categorie = await CategoriesSchema.findById(req.params.id);
+  const categorie = await categorieSchema.findById(req.params.id);
   if (!categorie) {
     throw new MyError("катигори байхгүй байна", 400);
   }

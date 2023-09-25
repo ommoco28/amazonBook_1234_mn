@@ -1,7 +1,5 @@
 const express = require("express");
 
-const booksRoutes = require("./bookRoute");
-
 const {
   getCategories,
   getCategorie,
@@ -19,5 +17,6 @@ router
   .put(updateCategorie)
   .delete(deleteCategorie);
 
-router.use("/:categoryId/books", booksRoutes);
+const { getCategorieBooks } = require("../controller/bookController");
+router.route("/:categoryId/books").get(getCategorieBooks);
 module.exports = router;

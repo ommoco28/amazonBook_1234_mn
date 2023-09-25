@@ -10,6 +10,7 @@ const errorHandle = require("./middleware/errorMiddleware");
 const connectDb = require("./config/db");
 const categoriesRoutes = require("./routes/categorieRoute");
 const booksRoutes = require("./routes/bookRoute");
+const usersRoutes = require("./routes/userRoute");
 
 const fileupload = require("express-fileupload");
 
@@ -26,6 +27,7 @@ app.use(fileupload());
 app.use(morgan("combined", { stream: stream }));
 app.use("/api/v1/categories", categoriesRoutes);
 app.use("/api/v1/books", booksRoutes);
+app.use("/api/v1/users", usersRoutes);
 app.use(errorHandle);
 
 const server = app.listen(process.env.PORT, () => {
